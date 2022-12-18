@@ -13,8 +13,14 @@ from multiprocessing import Pool
 # Set to true if you want to download the paper to your local drive
 DOWNLOAD_PAPERS = False
 OUTPUT_PATH = "Output"
-YEAR_MIN = 1988
-YEAR_MAX = 2021
+YEAR_MIN = 2012
+YEAR_MAX = 2013
+
+
+total_papers = 0
+abstract_missing = 0
+text_missing = 0
+author_missing = 0
 
 def text_from_pdf(pdf_path, download_papers = False):
     if not os.path.exists(pdf_path):
@@ -35,6 +41,12 @@ def extract_authors(soup):
 
 def extract_paper_from_link(link):
 
+    global total_papers
+    global abstract_missing
+    global author_missing
+    global text_missing
+
+
     paper_title = link.contents[0]
     info_link = base_url + link["href"]
     blank,base_1,year,root,hash_ = link['href'].split('/')
@@ -53,7 +65,12 @@ def extract_paper_from_link(link):
         pdf_file.close()
     
     # Get text from Research Paper (Includes Abstract, Title, Author etc.)
-    paper_text = text_from_pdf(pdf_path, DOWNLOAD_PAPERS)
+    try:
+        paper_text = text_from_pdf(pdf_path, DOWNLOAD_PAPERS)
+
+    except:
+        text_missing += 1
+        paper_text = ""
 
     html_content = requests.get(info_link).content
     paper_soup = BeautifulSoup(html_content, "html.parser")
@@ -63,14 +80,24 @@ def extract_paper_from_link(link):
         abstract = extract_abstract(paper_soup)
         
     except:
+
+        abstract_missing += 1
         # print("Abstract not found %s" % paper_title.encode("ascii", "replace"))
         abstract = ""
     
     #Extracting Authors
-    authors = extract_authors(paper_soup)
-    for author in authors:
-        paper_authors.append([len(paper_authors)+1, paper_id, author[0]])
+    try:
+        authors = extract_authors(paper_soup)
+        for author in authors:
+            paper_authors.append([len(paper_authors)+1, paper_id, author[0]])
     
+    except:
+        author_missing += 1
+        authors = []
+
+    
+    total_papers += 1
+
     #Return paper details
     return [paper_id, authors, year, paper_title, pdf_name, abstract, paper_text]
 
@@ -112,3 +139,11 @@ if not os.path.exists(OUTPUT_PATH):
 # Save data as CSV
 pd.DataFrame(papers, columns=["id", "authors", "year", "title", "pdf_name", "abstract", "paper_text"]).sort_values(by="id").to_csv(os.path.join(OUTPUT_PATH, "papers.csv"), index=False)
 pd.DataFrame(paper_authors, columns=["id", "paper_id", "author_id"]).sort_values(by="id").to_csv(os.path.join(OUTPUT_PATH, "paper_authors.csv"), index=False)
+
+print("Total No of papers extracted : ", total_papers)
+
+print("No of missing abstracts : ", abstract_missing )
+
+print("No of missing Text : ", text_missing )
+
+print("No of missing Authors : ", author_missing )

@@ -1,6 +1,8 @@
 # NIPS Reasearch Papers Downloader
 
-This python program can be used to automatically download (tested as on Dec 17, 2022) research papers published in NIPS (https://proceedings.neurips.cc/) between YEAR_MIN and YEAR_MAX. The code will also create a dataset containing ***Author, Year, Paper title, Abstract, Paper Text*** for each research paper which can be used for data analyses.
+This python program can be used to automatically download (tested as on Dec 17, 2022) research papers published in NIPS (https://proceedings.neurips.cc/) between YEAR_MIN and YEAR_MAX. The code will also create a dataset containing ***Author, Year, Paper title, Abstract, Paper Text*** for each research paper which can be used for data analyses. 
+
+#### UPDATE :  Implemented multiprocessing to speed up the process (from 3+ hrs to <15 mins )
 
 ## Usage
 
@@ -28,11 +30,6 @@ Step 4 : Run the program
 ```
 python3 download_nips_dataset.py
 ```
-
-
-## Upcoming features
-
-* Parallelized code
 
 ## Contact
 
